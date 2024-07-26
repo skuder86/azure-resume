@@ -7,7 +7,7 @@ variables:
   DOTNET_VERSION: '6.0'                           # Set this to the dotnet version to use
 
 jobs:
-- job: build-and-deploy
+- job: build_and_deploy  # Changed to use a valid name
   pool:
     vmImage: 'windows-latest'
 
