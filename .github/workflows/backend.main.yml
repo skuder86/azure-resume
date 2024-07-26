@@ -39,6 +39,6 @@ jobs:
 
   - task: AzureWebApp@1
     inputs:
-      azureSubscription: 'YOUR-AZURE-SUBSCRIPTION'
+      azureSubscription: 'Azure-Abonnement 1'  # Use your actual Azure subscription name
       appName: $(AZURE_FUNCTIONAPP_NAME)
       package: '$(AZURE_FUNCTIONAPP_PACKAGE_PATH)/api/output'
