@@ -2,47 +2,43 @@ trigger:
 - main
 
 variables:
-  AZURE_FUNCTIONAPP_NAME: 'GetResumeCounter2023'  # set this to your application's name
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'backend'    # set this to the path to your web app project, defaults to the repository root
-  DOTNET_VERSION: '6.0'              # set this to the dotnet version to use
+  AZURE_FUNCTIONAPP_NAME: 'GetResumeCounter2023'  # Set this to your application's name
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'backend'       # Set this to the path to your web app project, defaults to the repository root
+  DOTNET_VERSION: '6.0'                           # Set this to the dotnet version to use
 
 jobs:
-  - job: build-and-deploy
-    pool:
-      vmImage: 'windows-latest'
+- job: build-and-deploy
+  pool:
+    vmImage: 'windows-latest'
 
-    steps:
-    - task: UseDotNet@2
-      inputs:
-        packageType: 'sdk'
-        version: '6.x'
-        installationPath: $(Agent.ToolsDirectory)/dotnet
+  steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '6.x'
+      installationPath: $(Agent.ToolsDirectory)/dotnet
 
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '14.x'
-        checkLatest: true
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '14.x'
+      checkLatest: true
 
-    - task: AzureCLI@2
-      inputs:
-        azureSubscription: 'YOUR-AZURE-SUBSCRIPTION'
-        scriptType: 'ps'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
+  - script: |
+      az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
+    displayName: 'Login via Azure CLI'
+    
+  - script: |
+      cd $(AZURE_FUNCTIONAPP_PACKAGE_PATH)/api
+      dotnet build --configuration Release --output ./output
+    displayName: 'Build project'
 
-    - script: |
-        cd $(AZURE_FUNCTIONAPP_PACKAGE_PATH)/api
-        dotnet build --configuration Release --output ./output
-      displayName: 'Build project'
+  - script: |
+      cd $(AZURE_FUNCTIONAPP_PACKAGE_PATH)/tests
+      dotnet test
+    displayName: 'Run tests'
 
-    - script: |
-        cd $(AZURE_FUNCTIONAPP_PACKAGE_PATH)/tests
-        dotnet test
-      displayName: 'Run tests'
-
-    - task: AzureWebApp@1
-      inputs:
-        azureSubscription: 'YOUR-AZURE-SUBSCRIPTION'
-        appName: $(AZURE_FUNCTIONAPP_NAME)
-        package: '$(AZURE_FUNCTIONAPP_PACKAGE_PATH)/api/output'
+  - task: AzureWebApp@1
+    inputs:
+      azureSubscription: 'YOUR-AZURE-SUBSCRIPTION'
+      appName: $(AZURE_FUNCTIONAPP_NAME)
+      package: '$(AZURE_FUNCTIONAPP_PACKAGE_PATH)/api/output'
